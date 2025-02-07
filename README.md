@@ -22,6 +22,7 @@ Un gestor de eventos interactivo construido con React, TypeScript, y Vite en el 
 1️⃣ Clonar el repositorio
 
 git clone https://github.com/MrKhenn/Proyecto-Gestor-de-Eventos.git
+
 cd Proyecto-Gestor-de-Eventos
 
 2️⃣ Instalar dependencias
