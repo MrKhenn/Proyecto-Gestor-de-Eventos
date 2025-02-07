@@ -1,50 +1,41 @@
 # React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# 📌 Proyecto Gestor de Eventos
+Un gestor de eventos interactivo construido con React, TypeScript, y Vite en el frontend, y MongoDB en el backend.
 
-Currently, two official plugins are available:
+# 🚀 Características
+✅ Creación, edición y eliminación de eventos - CRUD
+✅ Listado de eventos con búsqueda y filtrado
+✅ Integración con base de datos
+✅ Sistema inicio de Sección, con cambio de UI/UX
+✅ UI/UX moderna
+✅ Mensajes dinamicos - Eliminar y Actualizar
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# 📦 Tecnologías utilizadas
+- Frontend: React + TypeScript + Vite
+- Backend: Node.js + Express + MongoDB + 
+- Estilos: TailwindCSS + SweetAlert 2
+- Autenticación y Seguridad: JWT, bcrypt (para encriptación de contraseñas)
+- Protección de rutas: Middleware para rutas privadas
 
-## Expanding the ESLint configuration
+# 🔧 Instalación y uso
+1️⃣ Clonar el repositorio
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+git clone https://github.com/MrKhenn/Proyecto-Gestor-de-Eventos.git
+cd Proyecto-Gestor-de-Eventos
 
-- Configure the top-level `parserOptions` property like this:
+2️⃣ Instalar dependencias
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+npm install
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+3️⃣ Ejecutar el proyecto en modo desarrollo
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+npm run dev (carpeta principal)
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+4️⃣ Construir para producción
+
+npm run build
+
+# 🛠 Configuración del backend
+
+Backend/Server.js(boton "run")
