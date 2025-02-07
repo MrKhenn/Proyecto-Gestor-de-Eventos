@@ -1,0 +1,439 @@
+//(App.tsx):
+import React, { useContext } from 'react';
+import { Route, Routes, Navigate } from 'react-router-dom'; // Ya no necesitas BrowserRouter
+import Inicio from './components/Inicio';
+import CreateRecord from './components/CreateRecord';
+import EditRecord from './components/EditRecord';
+import RecordList from './components/RecordList';
+import Login from './components/Login';
+import Register from './components/Register';
+import { AuthContext } from './api/AuthContext';
+import Footer from './components/Footer'; // Asegúrate de importar el componente Footer
+import './App.css';
+
+const PrivateRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
+  const authContext = useContext(AuthContext);
+
+  return authContext?.isAuthenticated ? element : <Navigate to="/login" />;
+};
+
+const App: React.FC = () => {
+  const authContext = useContext(AuthContext);
+
+  // Si aún está cargando la autenticación, no renderices nada (o un loader)
+  if (authContext?.loading) {
+    return <div>Cargando...</div>;  // Puedes personalizar esto con un spinner o algo visual
+  }
+
+  return (
+    <div>
+      <nav>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          {authContext?.isAuthenticated ? (
+            <>
+              <li><a href="/create">Crear Nuevo Evento</a></li>
+              <li><a href="/records">Eventos</a></li>
+              <li>Bienvenido, {authContext.user?.username} <button onClick={authContext.logout}>Cerrar Sesión</button></li>
+            </>
+          ) : (
+            <>
+              <li><a href="/login">Iniciar Sesión</a></li>
+              <li><a href="/register">Registrar</a></li>
+            </>
+          )}
+        </ul>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Inicio />} />
+        <Route path="/create" element={<PrivateRoute element={<CreateRecord />} />} />
+        <Route path="/edit/:id" element={<PrivateRoute element={<EditRecord />} />} />
+        <Route path="/records" element={<PrivateRoute element={<RecordList />} />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+      <Footer />
+    </div>
+  );
+};
+
+export default App;
+================================================================================================================================
+//(App.css):
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+/* Main container */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation styles */
+nav {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 12px 0;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+nav ul {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  list-style: none;
+}
+
+nav li {
+  margin-left: 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #1877f2;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+nav button {
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: 12px;
+}
+
+nav button:hover {
+  background-color: #166fe5;
+}
+
+/* Main content area */
+main {
+  flex: 1;
+  margin-top: 60px; /* Account for fixed nav */
+  padding: 32px 16px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* Footer styles */
+footer {
+  background-color: white;
+  padding: 20px 16px;
+  margin-top: auto;
+  border-top: 1px solid #dddfe2;
+}
+
+footer .footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  color: #737373;
+  font-size: 12px;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #1877f2;
+}
+
+/* Welcome message */
+.welcome-message {
+  display: flex;
+  align-items: center;
+  color: #1c1e21;
+  font-size: 14px;
+}
+
+/* Create/Edit Record Form */
+.record-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+/* Record List */
+.record-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.record-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  nav li {
+    margin: 8px 0;
+    margin-left: 0;
+  }
+  
+  .welcome-message {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .welcome-message button {
+    margin-top: 8px;
+    margin-left: 0;
+  }
+}
+================================================================================================================================================
+//(inicio.tsx)
+const Inicio: React.FC = () => {
+    return (
+      <div className='cuerpoInicio'>
+        <h1>Sistema de Registros - CRUD App</h1>
+        <p>Maneja tus registros de forma facil y sencilla con nuestro sistema de CRUD APP</p>
+      </div>
+    );
+  }
+  
+  export default Inicio;
+==========================================================================================================================================================
+//(Login.tsx):
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../api/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+const Login: React.FC = () => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const authContext = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authContext) {
+      const errorMsg = await authContext.login(username, password);
+      if (errorMsg) {
+        setError(errorMsg);
+      } else {
+        navigate('/');
+      }
+    }
+  };
+
+  return (
+    <div>
+      <h2>Iniciar Sesión</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="username">Usuario:</label>
+        <input
+          type="text"
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <label htmlFor="password">Contraseña:</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Iniciar Sesión</button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
+======================================================================================================================================================================
+//(RecordList.tsx):
+import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
+import { getRecords, updateRecord, deleteRecord, Record } from '../api/records'; // Asegúrate que estas funciones estén adecuadas para enviar el token.
+import '../styles/RecordList.css';
+
+const RecordList: React.FC = () => {
+  const [records, setRecords] = useState<Record[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filteredRecords, setFilteredRecords] = useState<Record[]>([]);
+
+  // Cargar registros desde la API
+  const fetchRecords = async () => {
+    try {
+      const token = localStorage.getItem('token'); // Obtener el token desde el localStorage
+      if (!token) {
+        Swal.fire('Acceso denegado', 'Por favor inicia sesión.', 'error');
+        return;
+      }
+      const data = await getRecords(token); // Pasar el token a la función
+      setRecords(data);
+      setFilteredRecords(data);
+    } catch (error) {
+      console.error('Error al cargar los registros', error);
+      Swal.fire('Error', 'Hubo un error al cargar los registros.', 'error');
+    }
+  };
+
+  useEffect(() => {
+    fetchRecords();
+  }, []);
+
+  // Manejar cambios en la barra de búsqueda
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    const filtered = records.filter((record) =>
+      record.name.toLowerCase().includes(term) ||
+      record.description.toLowerCase().includes(term) ||
+      record.organizer.toLowerCase().includes(term)
+    );
+    setFilteredRecords(filtered);
+  };
+
+  // Función para manejar la eliminación
+  const handleDelete = async (id: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      Swal.fire('Acceso denegado', 'Por favor inicia sesión.', 'error');
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡No podrás revertir esta acción!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteRecord(id, token); // Pasar el token a la función
+          Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
+          fetchRecords();
+        } catch (error) {
+          console.error('Error al eliminar el registro', error);
+          Swal.fire('Error', 'Hubo un error al eliminar el registro.', 'error');
+        }
+      }
+    });
+  };
+
+  // Función para manejar la edición
+  const handleEdit = async (record: Record) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      Swal.fire('Acceso denegado', 'Por favor inicia sesión.', 'error');
+      return;
+    }
+
+    const { value: formValues } = await Swal.fire({
+      title: 'Editar Registro',
+      html:
+        `<input id="swal-input-name" class="swal2-input" placeholder="Nombre" value="${record.name}">` +
+        `<textarea id="swal-input-description" class="swal2-textarea" placeholder="Descripción">${record.description}</textarea>` +
+        `<input id="swal-input-date" class="swal2-input" type="date" value="${record.date}">` +
+        `<input id="swal-input-organizer" class="swal2-input" placeholder="Organizador" value="${record.organizer}">`,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const name = (document.getElementById('swal-input-name') as HTMLInputElement).value;
+        const description = (document.getElementById('swal-input-description') as HTMLTextAreaElement).value;
+        const date = (document.getElementById('swal-input-date') as HTMLInputElement).value;
+        const organizer = (document.getElementById('swal-input-organizer') as HTMLInputElement).value;
+
+        if (!name || !description || !date || !organizer) {
+          Swal.showValidationMessage('Todos los campos son obligatorios');
+        }
+
+        return { name, description, date, organizer };
+      },
+    });
+
+    if (formValues) {
+      try {
+        await updateRecord(record._id, formValues, token); // Pasar el token a la función
+        Swal.fire('Actualizado', 'El registro ha sido actualizado.', 'success');
+        fetchRecords();
+      } catch (error) {
+        console.error('Error al actualizar el registro', error);
+        Swal.fire('Error', 'Hubo un error al actualizar el registro.', 'error');
+      }
+    }
+  };
+
+  return (
+    <div>
+      <h2>Registros</h2>
+      <input
+        type="text"
+        placeholder="Buscar registros..."
+        value={searchTerm}
+        onChange={handleSearchChange}
+        style={{ padding: '8px', marginBottom: '10px', width: '100%', boxSizing: 'border-box' }}
+      />
+      <ul>
+        {filteredRecords.length > 0 ? (
+          filteredRecords.map((record) => (
+            <li key={record._id}>
+              <strong>{record.name}</strong>: {record.description} <br />
+              <strong>Fecha:</strong> {record.date} <br />
+              <strong>Organizador:</strong> {record.organizer} <br />
+              <button onClick={() => handleEdit(record)}>Editar</button>{' '}
+              <button onClick={() => handleDelete(record._id)}>Eliminar</button>
+            </li>
+          ))
+        ) : (
+          <p>No se encontraron registros.</p>
+        )}
+      </ul>
+    </div>
+  );
+};
+
+export default RecordList;

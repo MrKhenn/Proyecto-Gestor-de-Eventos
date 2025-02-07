@@ -1,0 +1,212 @@
+
+==================================================FRONTEDND===============================================================================
+// App.tsx
+import React, { useContext } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Inicio from './components/Inicio';
+import CreateRecord from './components/CreateRecord';
+import EditRecord from './components/EditRecord';
+import RecordList from './components/RecordList';
+import Login from './components/Login';
+import Register from './components/Register';
+import { AuthProvider } from './api/AuthProvider';
+import { AuthContext } from './api/AuthContext';
+import './App.css';
+
+const PrivateRoute: React.FC<{ element: JSX.Element }> = ({ element }) => {
+  const authContext = useContext(AuthContext);
+  return authContext?.isAuthenticated ? element : <Navigate to="/login" />;
+};
+
+const App: React.FC = () => {
+  const authContext = useContext(AuthContext);
+
+  console.log("🔍 Estado de autenticación en App.tsx:", authContext); // 🔍 DEBUG
+
+  return (
+    <Router>
+      <AuthProvider>
+    <div>
+      <nav>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          {authContext?.isAuthenticated ? (
+            <>
+              <li><a href="/create">Crear Nuevo Evento</a></li>
+              <li><a href="/records">Eventos</a></li>
+              <li>Bienvenido, {authContext.user?.username} <button onClick={authContext.logout}>Cerrar Sesión</button></li>
+            </>
+          ) : (
+            <>
+              <li><a href="/login">Iniciar Sesión</a></li>
+              <li><a href="/register">Registrar</a></li>
+            </>
+          )}
+        </ul>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Inicio />} />
+        <Route path="/create" element={<PrivateRoute element={<CreateRecord />} />} />
+        <Route path="/edit/:id" element={<PrivateRoute element={<EditRecord />} />} />
+        <Route path="/records" element={<PrivateRoute element={<RecordList />} />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </div>
+      </AuthProvider>
+    </Router>
+  );
+};
+
+
+export default App;
+==============================================================================================================================================
+//components/(inicio.tsx):
+
+const Inicio: React.FC = () => {
+    return (
+      <div>
+        <h1>Sistema de Registros - CRUD App</h1>
+        <p>Maneja tus registros de forma facil y sencilla con nuestro sistema de CRUD APP</p>
+      </div>
+    );
+  }
+  
+  export default Inicio;
+==============================================================================================================================================
+//components/(login.tsx):
+
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../api/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+const Login: React.FC = () => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const authContext = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authContext) {
+      const errorMsg = await authContext.login(username, password);
+      if (errorMsg) {
+        setError(errorMsg);
+      } else {
+        navigate('/');
+      }
+    }
+  };
+
+  return (
+    <div>
+      <h2>Iniciar Sesión</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="username">Usuario:</label>
+        <input
+          type="text"
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <label htmlFor="password">Contraseña:</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Iniciar Sesión</button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
+=========================================================================================================================================
+//api/(AuthContext.ts):
+
+import { createContext } from 'react';
+
+interface AuthContextProps {
+  isAuthenticated: boolean;
+  user: { username: string } | null;
+  login: (username: string, password: string) => Promise<string | null>;
+  logout: () => void;
+  checkAuthStatus: () => void;
+}
+
+// ✅ Asegurar valores por defecto para evitar undefined
+export const AuthContext = createContext<AuthContextProps>({
+  isAuthenticated: false,
+  user: null,
+  login: async () => null,
+  logout: () => {},
+  checkAuthStatus: () => {},
+});
+=============================================================================================================================================
+//api/(AuthProvider.tsx):
+
+import React, { useState, useEffect, ReactNode, useCallback } from 'react';
+import axios from 'axios';
+import { AuthContext } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<{ username: string } | null>(null);
+  const navigate = useNavigate();
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    setUser(null);
+    navigate('/login');
+  }, [navigate]);
+
+  const checkAuthStatus = useCallback(async () => {
+    const token = localStorage.getItem('token');
+
+    console.log("🔍 Verificando autenticación con token:", token);
+
+    if (token) {
+      try {
+        const response = await axios.get('http://localhost:4000/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("✅ Usuario autenticado:", response.data);
+        setUser(response.data);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('❌ Error al verificar autenticación:', error);
+        logout();
+      }
+    } else {
+      console.log("⚠️ No hay token en localStorage, cerrando sesión.");
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+  }, [logout]);
+
+  useEffect(() => {
+    console.log("🔄 Ejecutando checkAuthStatus en useEffect...");
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, login: async () => null, logout, checkAuthStatus }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+=========================================================================FIN DEL FRONT========================================================================================

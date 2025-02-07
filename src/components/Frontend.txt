@@ -1,0 +1,538 @@
+(App.tsx):
+
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Inicio from './components/Inicio';
+import CreateRecord from './components/CreateRecord';
+import EditRecord from './components/EditRecord';
+import RecordList from './components/RecordList';
+import Login from './components/Login';
+import Register from './components/Register';
+import { AuthProvider } from './api/AuthProvider';
+import './App.css';
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <div>
+          <nav>
+            <ul>
+              <li><a href="/">Inicio</a></li>
+              <li><a href="/create">Crear Nuevo Evento</a></li>
+              <li><a href="/records">Evento</a></li>
+              <li><a href="/login">Iniciar Sesión</a></li>
+              <li><a href="/register">Registrar</a></li>
+            </ul>
+          </nav>
+
+          <Routes>
+            <Route path="/" element={<Inicio />} />
+            <Route path="/create" element={<CreateRecord />} />
+            <Route path="/edit/:id" element={<EditRecord />} />
+            <Route path="/records" element={<RecordList />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
+
+=====================================================================================================================
+// components/ (inicio.tsx):
+
+const Inicio: React.FC = () => {
+    return (
+      <div>
+        <h1>Sistema de Registros - CRUD App</h1>
+        <p>Maneja tus registros de forma facil y sencilla con nuestro sistema de CRUD APP</p>
+      </div>
+    );
+  }
+  
+  export default Inicio;
+=========================================================================================================================
+//components/ (RecordList.tsx):
+
+import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
+import { getRecords, updateRecord, deleteRecord, Record } from '../api/records';
+import '../styles/RecordList.css';
+
+const RecordList: React.FC = () => {
+  const [records, setRecords] = useState<Record[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filteredRecords, setFilteredRecords] = useState<Record[]>([]);
+
+  // Cargar registros desde la API
+  const fetchRecords = async () => {
+    try {
+      const data = await getRecords();
+      setRecords(data);
+      setFilteredRecords(data);
+    } catch (error) {
+      console.error('Error al cargar los registros', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecords();
+  }, []);
+
+  // Manejar cambios en la barra de búsqueda
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    const filtered = records.filter((record) =>
+      record.name.toLowerCase().includes(term) ||
+      record.description.toLowerCase().includes(term) ||
+      record.organizer.toLowerCase().includes(term)
+    );
+    setFilteredRecords(filtered);
+  };
+
+  // Función para manejar la eliminación
+  const handleDelete = async (id: string) => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡No podrás revertir esta acción!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteRecord(id);
+          Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
+          fetchRecords();
+        } catch (error) {
+          console.error('Error al eliminar el registro', error);
+          Swal.fire('Error', 'Hubo un error al eliminar el registro.', 'error');
+        }
+      }
+    });
+  };
+
+  // Función para manejar la edición
+  const handleEdit = async (record: Record) => {
+    const { value: formValues } = await Swal.fire({
+      title: 'Editar Registro',
+      html:
+        `<input id="swal-input-name" class="swal2-input" placeholder="Nombre" value="${record.name}">` +
+        `<textarea id="swal-input-description" class="swal2-textarea" placeholder="Descripción">${record.description}</textarea>` +
+        `<input id="swal-input-date" class="swal2-input" type="date" value="${record.date}">` +
+        `<input id="swal-input-organizer" class="swal2-input" placeholder="Organizador" value="${record.organizer}">`,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const name = (document.getElementById('swal-input-name') as HTMLInputElement).value;
+        const description = (document.getElementById('swal-input-description') as HTMLTextAreaElement).value;
+        const date = (document.getElementById('swal-input-date') as HTMLInputElement).value;
+        const organizer = (document.getElementById('swal-input-organizer') as HTMLInputElement).value;
+
+        if (!name || !description || !date || !organizer) {
+          Swal.showValidationMessage('Todos los campos son obligatorios');
+        }
+
+        return { name, description, date, organizer };
+      },
+    });
+
+    if (formValues) {
+      try {
+        await updateRecord(record._id, formValues);
+        Swal.fire('Actualizado', 'El registro ha sido actualizado.', 'success');
+        fetchRecords();
+      } catch (error) {
+        console.error('Error al actualizar el registro', error);
+        Swal.fire('Error', 'Hubo un error al actualizar el registro.', 'error');
+      }
+    }
+  };
+
+  return (
+    <div>
+      <h2>Registros</h2>
+      <input
+        type="text"
+        placeholder="Buscar registros..."
+        value={searchTerm}
+        onChange={handleSearchChange}
+        style={{ padding: '8px', marginBottom: '10px', width: '100%', boxSizing: 'border-box' }}
+      />
+      <ul>
+        {filteredRecords.length > 0 ? (
+          filteredRecords.map((record) => (
+            <li key={record._id}>
+              <strong>{record.name}</strong>: {record.description} <br />
+              <strong>Fecha:</strong> {record.date} <br />
+              <strong>Organizador:</strong> {record.organizer} <br />
+              <button onClick={() => handleEdit(record)}>Editar</button>{' '}
+              <button onClick={() => handleDelete(record._id)}>Eliminar</button>
+            </li>
+          ))
+        ) : (
+          <p>No se encontraron registros.</p>
+        )}
+      </ul>
+    </div>
+  );
+};
+
+export default RecordList;
+===============================================================================================================
+//components/(EditRecord.tsx):
+
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+
+const EditRecord: React.FC = () => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState('');
+  const [organizer, setOrganizer] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchRecord = async () => {
+      const response = await axios.get(`/api/records/${id}`);
+      setName(response.data.name);
+      setDescription(response.data.description);
+      setDate(response.data.date);
+      setOrganizer(response.data.organizer);
+    };
+    if (id) fetchRecord();
+  }, [id]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const updatedRecord = { name, description, date, organizer };
+    await axios.put(`/api/records/${id}`, updatedRecord);
+    alert('Record updated successfully!');
+    navigate('/');
+  };
+
+  return (
+    <div>
+      <h2>Edit Record</h2>
+      <form onSubmit={handleSubmit}>
+        <label>Name:</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <label>Description:</label>
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <label>Date:</label>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+        <label>Organizer:</label>
+        <input
+          type="text"
+          value={organizer}
+          onChange={(e) => setOrganizer(e.target.value)}
+        />
+        <button type="submit">Update</button>
+      </form>
+    </div>
+  );
+}
+
+export default EditRecord;
+====================================================================================================================
+//components/(CreateRecord.tsx):
+
+// src/components/CreateRecord.tsx
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const CreateRecord: React.FC = () => {
+  const [name, setName] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [date, setDate] = useState<string>('');
+  const [organizer, setOrganizer] = useState<string>('');
+  const navigate = useNavigate(); // Para redirigir después de crear el registro
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    if (!name || !description || !date || !organizer) {
+      alert('Por favor completa todos los campos');
+      return;
+    }
+  
+    try {
+      console.log({ name, description, date, organizer }); // Verifica los valores antes de enviar
+      const response = await axios.post('http://localhost:4000/api/records', { name, description, date, organizer });
+      if (response.status === 201) {
+        alert('Registro creado exitosamente!');
+        navigate('/records');
+      }
+    } catch (error) {
+      console.error('Error al crear el registro', error);
+      alert('Hubo un error al crear el registro');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Crear Registro</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="name">Nombre</label>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="description">Descripción</label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          ></textarea>
+        </div>
+        <div>
+          <label htmlFor="date">Fecha</label>
+          <input
+            type="date"
+            id="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="organizer">Organizador</label>
+          <input
+            type="text"
+            id="organizer"
+            value={organizer}
+            onChange={(e) => setOrganizer(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Crear</button>
+      </form>
+    </div>
+  );
+};
+
+export default CreateRecord;
+=====================================================================================================================
+//components/(login.tsx):
+
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../api/AuthContext';
+
+const Login: React.FC = () => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const authContext = useContext(AuthContext);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (authContext) {
+      await authContext.login(username, password);
+    }
+  };
+
+  return (
+    <div>
+      <h2>Iniciar Sesión</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="username">Usuario:</label>
+        <input
+          type="text"
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <label htmlFor="password">Contraseña:</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Iniciar Sesión</button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
+======================================================================================================================
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const Register: React.FC = () => {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:4000/api/register', { username, password });
+      alert('Usuario registrado con éxito');
+    } catch (error) {
+      console.error('Error al registrar el usuario', error);
+      alert('Error al registrar el usuario');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Registrar</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="username">Usuario:</label>
+        <input
+          type="text"
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <label htmlFor="password">Contraseña:</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Registrar</button>
+      </form>
+    </div>
+  );
+};
+
+export default Register;
+============================================================================================================================
+//api/(AuthContext.ts):
+
+import { createContext } from 'react';
+
+interface AuthContextProps {
+  isAuthenticated: boolean;
+  login: (username: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+=====================================================================================================================================
+//api/(AuthProvider.tsx):
+
+import React, { useState, useEffect, ReactNode } from 'react';
+import axios from 'axios';
+import { AuthContext } from './AuthContext';
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await axios.post('http://localhost:4000/api/login', { username, password });
+      localStorage.setItem('token', response.data.token);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error al iniciar sesión', error);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+  };
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+===================================================================================================================
+//api/(records.tsx):
+
+import axios from 'axios';
+
+const API_URL = 'http://localhost:4000/api/records';
+
+export interface Record {
+  _id: string;
+  name: string;
+  description: string;
+  date: string;
+  organizer: string;
+}
+
+// Función para obtener los registros
+export const getRecords = async (): Promise<Record[]> => {
+  try {
+    const response = await axios.get(API_URL);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener los registros:', error);
+    throw error;
+  }
+};
+
+// Función para eliminar un registro
+export const deleteRecord = async (id: string): Promise<void> => {
+  try {
+    await axios.delete(`${API_URL}/${id}`);
+  } catch (error) {
+    console.error('Error al eliminar el registro:', error);
+    throw error;
+  }
+};
+
+// Función para actualizar un registro
+export const updateRecord = async (id: string, updatedRecord: Partial<Record>): Promise<Record> => {
+  try {
+    const response = await axios.put(`${API_URL}/${id}`, updatedRecord);
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar el registro:', error);
+    throw error;
+  }
+};

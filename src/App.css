@@ -1,0 +1,486 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Navigation styles */
+nav {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 12px 0;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+nav ul {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  list-style: none;
+}
+
+nav li {
+  margin-left: 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #1877f2;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+nav button {
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-left: 12px;
+}
+
+nav button:hover {
+  background-color: #166fe5;
+}
+
+/* Footer styles */
+footer {
+  background-color: white;
+  padding: 20px 16px;
+  margin-top: auto;
+  border-top: 1px solid #dddfe2;
+  text-align: center;
+  color: #737373;
+  font-size: 12px;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.cuerpoInicio{
+  min-height: 90vh;
+  text-align: center;
+  padding-top: 260px;
+}
+
+.cuerpoInicio h1 {
+  font-family: SFProDisplay-Regular, Helvetica, Arial, sans-serif;
+  font-weight: 800;
+  color: #166fe5;
+  margin-bottom: 20px;
+  cursor: default;
+  display: inline-block; /* Necesario para que transform funcione correctamente */
+  transition: transform 0.4s ease, text-shadow 0.4s ease;
+}
+
+.cuerpoInicio h1:hover {
+  transform: translateX(-10px) scale(1.1); /* Movimiento + escalado */
+  text-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); /* Sombra suave */
+}
+
+.cuerpoInicio p{
+  font-weight: 600;
+}
+
+.Login {
+  max-width: 350px;
+  margin: 50px auto;
+  padding: 30px;
+  margin-top: 100px;
+  margin-bottom: 150px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.Login h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.Login p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.Login form {
+  display: flex;
+  flex-direction: column;
+}
+
+.Login label {
+  text-align: left;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.Login input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.Login input:focus {
+  border-color: #166fe5;
+  box-shadow: 0 0 5px rgba(22, 111, 229, 0.5);
+  outline: none;
+}
+
+.Login button {
+  background: #166fe5;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.Login button:hover {
+  background: #125bb5;
+  transform: scale(1.05);
+}
+
+.Login button:active {
+  transform: scale(0.95);
+}
+
+.register {
+  max-width: 350px;
+  margin: 50px auto;
+  padding: 30px;
+  margin-top: 100px;
+  margin-bottom: 150px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.register h2 {
+  color: #000000;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.register p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.register form {
+  display: flex;
+  flex-direction: column;
+}
+
+.register label {
+  text-align: left;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.register input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.register input:focus {
+  border-color: #166fe5;
+  box-shadow: 0 0 5px rgba(8, 42, 230, 0.5);
+  outline: none;
+}
+
+.register button {
+  background: #1877f2;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.register button:hover {
+  background: #125bb5;
+  transform: scale(1.05);
+}
+
+.register button:active {
+  transform: scale(0.95);
+}
+
+.CrearEvento {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 30px;
+  margin-top: 100px;
+  margin-bottom: 40px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.CrearEvento h2 {
+  color: #166fe5;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.CrearEvento form {
+  display: flex;
+  flex-direction: column;
+}
+
+.CrearEvento label {
+  text-align: left;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.CrearEvento input,
+.CrearEvento textarea {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.CrearEvento input:focus,
+.CrearEvento textarea:focus {
+  border-color: #166fe5;
+  box-shadow: 0 0 5px rgba(22, 111, 229, 0.5);
+  outline: none;
+}
+
+.CrearEvento textarea {
+  resize: none;
+  height: 100px;
+}
+
+.CrearEvento button {
+  background: #166fe5;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.CrearEvento button:hover {
+  background: #135bb2;
+  transform: scale(1.05);
+}
+
+.CrearEvento button:active {
+  transform: scale(0.95);
+}
+
+.EventList {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  margin-top: 100px;
+  margin-bottom: 40px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.EventList h2 {
+  color: #166fe5;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.EventList input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.EventList input:focus {
+  border-color: #166fe5;
+  box-shadow: 0 0 5px rgba(22, 111, 229, 0.5);
+  outline: none;
+}
+
+.EventList ul {
+  list-style: none;
+  padding: 0;
+}
+
+.EventList li {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.EventList li strong {
+  color: #166fe5;
+}
+
+.EventList button {
+  background: #166fe5;
+  color: white;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin-right: 5px;
+}
+
+.EventList button:hover {
+  background: #135bb2;
+  transform: scale(1.05);
+}
+
+.EventList button:active {
+  transform: scale(0.95);
+}
+
+.EventList p {
+  color: #777;
+  font-style: italic;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #1877f2;
+}
+
+/* Welcome message */
+.welcome-message {
+  display: flex;
+  align-items: center;
+  color: #1c1e21;
+  font-size: 14px;
+}
+
+/* Create/Edit Record Form */
+.record-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  margin: 20px auto;
+}
+
+/* Record List */
+.record-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.record-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  nav li {
+    margin: 8px 0;
+    margin-left: 0;
+  }
+  
+  .welcome-message {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .welcome-message button {
+    margin-top: 8px;
+    margin-left: 0;
+  }
+}

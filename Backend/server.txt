@@ -1,0 +1,143 @@
+const express = require('express');
+const mongoose = require('./db'); // Asegúrate de que la conexión esté correctamente configurada
+const Record = require('./models/Record'); // Asegúrate de tener el modelo Record
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
+
+const app = express();
+app.use(express.json()); // Para que el servidor maneje JSON
+require('dotenv').config();
+
+// Usa la variable de entorno
+const jwtSecret = process.env.JWT_SECRET;
+
+// server.js
+const cors = require('cors');
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+
+// Ruta GET para obtener todos los registros
+app.get('/api/records', async (req, res) => {
+  try {
+    const records = await Record.find(); // Recupera todos los registros de la base de datos
+    res.json(records); // Devuelve los registros en formato JSON
+  } catch (err) {
+    res.status(500).json({ message: 'Error al obtener los registros' });
+  }
+});
+
+// Ruta para obtener un registro específico por su ID
+app.get('/api/records/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const record = await Record.findById(id); // Encuentra el registro por ID
+    if (!record) {
+      return res.status(404).json({ error: 'Registro no encontrado' });
+    }
+    res.json(record); // Devuelve el registro encontrado
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener el registro' });
+  }
+});
+
+// Ruta para crear un nuevo registro
+app.post('/api/records', async (req, res) => {
+  console.log(req.body); // Verifica qué datos llegan al backend
+  const { name, description, date, organizer } = req.body;
+
+  try {
+    const newRecord = new Record({ name, description, date, organizer });
+    const savedRecord = await newRecord.save(); // Guardar el registro
+    console.log('Registro guardado:', savedRecord); // Confirmar que se guardó
+    res.status(201).json(savedRecord); // Responder al cliente
+  } catch (err) {
+    console.error('Error al crear el registro:', err); // Registrar el error
+    res.status(500).json({ error: 'Error al crear el registro' }); // Enviar respuesta al cliente
+  }
+});
+
+// Ruta para actualizar un registro
+app.put('/api/records/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, description, date, organizer } = req.body;
+  try {
+    const updatedRecord = await Record.findByIdAndUpdate(
+      id,
+      { name, description, date, organizer },
+      { new: true }
+    );
+    if (!updatedRecord) {
+      return res.status(404).json({ error: 'Registro no encontrado' });
+    }
+    res.json(updatedRecord); // Devuelve el registro actualizado
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar el registro' });
+  }
+});
+
+// Ruta para eliminar un registro
+app.delete('/api/records/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedRecord = await Record.findByIdAndDelete(id); // Elimina el registro por ID
+    if (!deletedRecord) {
+      return res.status(404).json({ error: 'Registro no encontrado' });
+    }
+    res.json({ message: 'Registro eliminado' }); // Devuelve un mensaje de éxito
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar el registro' });
+  }
+});
+
+// Ruta de registro
+app.post('/api/register', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = new User({ username, password });
+    await user.save();
+    res.status(201).send('User registered');
+  } catch (error) {
+    res.status(400).send('Error registering user');
+  }
+});
+
+// Ruta de inicio de sesión
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).send('Invalid credentials');
+    }
+    const token = jwt.sign(
+      { userId: user._id },
+      'your_jwt_secret_key',
+      { expiresIn: '1h' }
+    );
+    res.json({ token });
+  } catch (error) {
+    res.status(500).send('Server error');
+  }
+});
+
+// Iniciar el servidor
+app.listen(4000, () => {
+  console.log('Server running on port 4000');
+});
